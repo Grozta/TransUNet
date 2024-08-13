@@ -1,2 +1,5 @@
 __pycache__/
 model/vit_checkpoint/imagenet21k/
+model/
+test_log/
+

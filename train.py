@@ -21,7 +21,7 @@ parser.add_argument('--num_classes', type=int,
 parser.add_argument('--max_iterations', type=int,
                     default=30000, help='maximum epoch number to train')
 parser.add_argument('--max_epochs', type=int,
-                    default=150, help='maximum epoch number to train')
+                    default=300, help='maximum epoch number to train')
 parser.add_argument('--batch_size', type=int,
                     default=24, help='batch_size per gpu')
 parser.add_argument('--n_gpu', type=int, default=1, help='total gpu')
@@ -39,6 +39,8 @@ parser.add_argument('--vit_name', type=str,
                     default='R50-ViT-B_16', help='select one vit model')
 parser.add_argument('--vit_patches_size', type=int,
                     default=16, help='vit_patches_size, default is 16')
+parser.add_argument('--tag', type=str,
+                    default='v1', help='tag_name')
 args = parser.parse_args()
 
 
@@ -72,7 +74,7 @@ if __name__ == "__main__":
     args.list_dir = dataset_config[dataset_name]['list_dir']
     args.is_pretrain = True
     args.exp = 'TU_' + dataset_name + str(args.img_size)
-    snapshot_path = "../model/{}/{}".format(args.exp, 'TU')
+    snapshot_path = "./model/{}/{}".format(args.exp, 'TU')
     snapshot_path = snapshot_path + '_pretrain' if args.is_pretrain else snapshot_path
     snapshot_path += '_' + args.vit_name
     snapshot_path = snapshot_path + '_skip' + str(args.n_skip)
@@ -83,10 +85,11 @@ if __name__ == "__main__":
     snapshot_path = snapshot_path + '_lr' + str(args.base_lr) if args.base_lr != 0.01 else snapshot_path
     snapshot_path = snapshot_path + '_'+str(args.img_size)
     snapshot_path = snapshot_path + '_s'+str(args.seed) if args.seed!=1234 else snapshot_path
-
+    snapshot_path = snapshot_path + '_'+str(args.tag)
     if not os.path.exists(snapshot_path):
         os.makedirs(snapshot_path)
     config_vit = CONFIGS_ViT_seg[args.vit_name]
+    config_vit.pretrained_path = './model/vit_checkpoint/imagenet21k/imagenet21k_R50+ViT-B_16.npz'
     config_vit.n_classes = args.num_classes
     config_vit.n_skip = args.n_skip
     if args.vit_name.find('R50') != -1:
