@@ -7,13 +7,13 @@ import torch
 import torch.backends.cudnn as cudnn
 from networks.vit_seg_modeling import VisionTransformer as ViT_seg
 from networks.vit_seg_modeling import CONFIGS as CONFIGS_ViT_seg
-from trainer import trainer_synapse
+from trainer import trainer_synapse,trainer_acdc
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--root_path', type=str,
                     default='../data/Synapse/train_npz', help='root dir for data')
 parser.add_argument('--dataset', type=str,
-                    default='Synapse', help='experiment_name')
+                    default='ACDC', help='experiment_name')
 parser.add_argument('--list_dir', type=str,
                     default='./lists/lists_Synapse', help='list dir')
 parser.add_argument('--num_classes', type=int,
@@ -61,6 +61,11 @@ if __name__ == "__main__":
             'list_dir': './lists/lists_Synapse',
             'num_classes': 9,
         },
+        'ACDC':{
+            'root_path': '/media/grozta/SOYO/DATASET/ACDC',
+            'list_dir': '/media/grozta/SOYO/DATASET/ACDC',
+            'num_classes': 4,
+        }
     }
     args.num_classes = dataset_config[dataset_name]['num_classes']
     args.root_path = dataset_config[dataset_name]['root_path']
@@ -82,6 +87,7 @@ if __name__ == "__main__":
     if not os.path.exists(snapshot_path):
         os.makedirs(snapshot_path)
     config_vit = CONFIGS_ViT_seg[args.vit_name]
+    config_vit.pretrained_path = './model/vit_checkpoint/imagenet21k/imagenet21k_R50+ViT-B_16.npz'
     config_vit.n_classes = args.num_classes
     config_vit.n_skip = args.n_skip
     if args.vit_name.find('R50') != -1:
@@ -89,5 +95,5 @@ if __name__ == "__main__":
     net = ViT_seg(config_vit, img_size=args.img_size, num_classes=config_vit.n_classes).cuda()
     net.load_from(weights=np.load(config_vit.pretrained_path))
 
-    trainer = {'Synapse': trainer_synapse,}
+    trainer = {'Synapse': trainer_synapse,'ACDC':trainer_acdc}
     trainer[dataset_name](args, net, snapshot_path)

@@ -73,3 +73,34 @@ class Synapse_dataset(Dataset):
             sample = self.transform(sample)
         sample['case_name'] = self.sample_list[idx].strip('\n')
         return sample
+    
+class ACDC_dataset(Dataset):
+    def __init__(self, base_dir, list_dir, split, transform=None):
+        self.transform = transform  # using transform in torch!
+        self.split = split
+        if self.split == "train":
+            self.sample_list = open(os.path.join(list_dir, self.split+'_slices.list')).readlines() #'train_slices.list'
+        else:
+            self.sample_list = open(os.path.join(list_dir, self.split+'.list')).readlines()
+        self.data_dir = base_dir
+
+    def __len__(self):
+        return len(self.sample_list)
+
+    def __getitem__(self, idx):
+        if self.split == "train":
+            slice_name = self.sample_list[idx].strip('\n')
+            data_path = os.path.join(self.data_dir, "data/slices/{}.h5".format(slice_name))
+            h5f = h5py.File(data_path, "r")
+            image, label = h5f["image"][:], h5f['label'][:]
+        else:
+            vol_name = self.sample_list[idx].strip('\n')
+            filepath = os.path.join(self.data_dir, "data/{}.h5".format(vol_name))
+            data = h5py.File(filepath)
+            image, label = data['image'][:], data['label'][:]
+
+        sample = {'image': image, 'label': label}
+        if self.transform:
+            sample = self.transform(sample)
+        sample['case_name'] = self.sample_list[idx].strip('\n')
+        return sample
