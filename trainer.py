@@ -164,7 +164,6 @@ def trainer_acdc(args, model, snapshot_path):
         model.eval()
         metric_list = 0.0
         for i_batch, sampled_batch in tqdm(enumerate(valloader)):
-            h, w = sampled_batch["image"].size()[2:]
             image, label, case_name = sampled_batch["image"], sampled_batch["label"], sampled_batch['case_name'][0]
             metric_i = test_single_volume(image, label, model, classes=args.num_classes, patch_size=[args.img_size, args.img_size],
                                         test_save_path=None, case=case_name)
@@ -176,10 +175,12 @@ def trainer_acdc(args, model, snapshot_path):
         if epoch_num > int(max_epoch / 10) and performance> best_performance:
             best_performance = performance
             save_mode_path = os.path.join(snapshot_path, 'best_model.pth')
+            save_mode_path_iter = os.path.join(snapshot_path, 'epoch_' + str(epoch_num) +'_'+str(performance) + '.pth')
             torch.save(model.state_dict(), save_mode_path)
+            torch.save(model.state_dict(), save_mode_path_iter)
             logging.info("save model to {}".format(save_mode_path))
         
-        save_interval = 10  # int(max_epoch/6)
+        save_interval = 50  # int(max_epoch/6)
         if epoch_num > int(max_epoch / 4) and (epoch_num + 1) % save_interval == 0:
             save_mode_path = os.path.join(snapshot_path, 'epoch_' + str(epoch_num) + '.pth')
             torch.save(model.state_dict(), save_mode_path)

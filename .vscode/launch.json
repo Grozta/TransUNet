@@ -10,7 +10,7 @@
             "request": "launch",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}",
-            "program": "${workspaceFolder}/train.py",
+            "program": "${workspaceFolder}/test.py",
         }
     ]
 }
